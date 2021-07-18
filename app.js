@@ -1,31 +1,34 @@
 
 const express = require("express");
-const path = require('path');
 var bodyParser=require("body-parser");
 const app = express();
 app.use(bodyParser.json());
 app.use(express.static('public'));
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
+const mongoUri = "Replace with Mongoclient connect uri";
 
+// app.use(bodyParser.urlencoded({
+//     extended: true
+// }));
 
+const auth = require("./auth_3.js");
 const { MongoClient } = require('mongodb');
 
  async function addUser(name, password)
 {
-    const uri = "mongodb+srv://NbAdmin:LiGpX8syZa3MMk8w@clusternine.v5ifg.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
-    const client = new MongoClient(uri, {useNewUrlParser: true, useUnifiedTopology:true});
-    const user = {"name":name, "password":password};
+    const client = new MongoClient(mongoUri, {useNewUrlParser: true, useUnifiedTopology:true});
+    
     try 
     {
         await client.connect();
+        let newPassword = await auth.getPasswordHash(password);
+        let user = {"name":name, "password":newPassword};
         const res = await client.db("TestDb").collection("UserInfo").insertOne(user);
-        console.log(res.insertedIds);
+        return true;
     } 
     catch (error) 
     {
         console.error(error);
+        return false;
     }
     finally {
         await client.close();
@@ -34,16 +37,17 @@ const { MongoClient } = require('mongodb');
 
 async function verifyUser(name,password)
 {
-    const uri = "mongodb+srv://NbAdmin:LiGpX8syZa3MMk8w@clusternine.v5ifg.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
-    const client = new MongoClient(uri, {useNewUrlParser: true, useUnifiedTopology:true});
-    const user = {"name":name, "password":password};
+    const client = new MongoClient(mongoUri, {useNewUrlParser: true, useUnifiedTopology:true});
     try 
     {
         await client.connect();
+        
+        let user = {"name":name};
         const res = await client.db("TestDb").collection("UserInfo").findOne(user);
         if(res!==null)
         {
-            return true;
+            const isPasswordCorrect = await auth.isPasswordCorrect(password, res.password);
+            return isPasswordCorrect;
         }
         else
         {
@@ -71,36 +75,34 @@ app.post('/sign_up', async function(req,res){
         "name": name,
         "password":pass,
     }
-        await addUser(data.name, data.password);
-        console.log("Record inserted Successfully");
-                 
-    res.send("Successful!");
+        const result = await addUser(data.name, data.password);
+        if(result)
+        {
+            res.send({"success": "User added!"});
+        }
+        else
+        {
+            res.send({"error": "Unable to add user"});
+        }  
 });
 
 app.post('/login', async function(req,res){
     var name = req.body.name;
     var pass = req.body.password;
-  
     var data = {
         "name": name,
         "password":pass,
     }
-
     const result = await verifyUser(data.name, data.password);
         if(result)
         {
-            res.send("Successful!");
+            res.send({"success": "User verified!"});
         }
         else
         {
-            res.send("Not a user!");
+            res.send({"error": "Not a user"});
         }  
-    
 });
   
-app.get("/userLogin.js", (req, res) => {
-    res.sendFile(`${__dirname}/userLogin.js`);
-});
-
 app.listen(3000,()=> {console.log("Listening on 3000");});
 
