@@ -4,7 +4,7 @@ var bodyParser=require("body-parser");
 const app = express();
 app.use(bodyParser.json());
 app.use(express.static('public'));
-const mongoUri = "mongodb+srv://NbAdmin:LiGpX8syZa3MMk8w@clusternine.v5ifg.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const mongoUri = "Replace with mongo uri";
 
 // app.use(bodyParser.urlencoded({
 //     extended: true
