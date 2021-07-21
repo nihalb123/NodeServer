@@ -4,7 +4,7 @@ var bodyParser=require("body-parser");
 const app = express();
 app.use(bodyParser.json());
 app.use(express.static('public'));
-const mongoUri = "Replace with Mongoclient connect uri";
+const mongoUri = "mongodb+srv://NbAdmin:LiGpX8syZa3MMk8w@clusternine.v5ifg.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 
 // app.use(bodyParser.urlencoded({
 //     extended: true
@@ -68,14 +68,10 @@ app.get("/", (req, res) => {
 });
 
 app.post('/sign_up', async function(req,res){
-    var name = req.body.name;
-    var pass = req.body.password;
+    let name = req.body.name;
+    let pass = req.body.password;
   
-    var data = {
-        "name": name,
-        "password":pass,
-    }
-        const result = await addUser(data.name, data.password);
+        const result = await addUser(name, pass);
         if(result)
         {
             res.send({"success": "User added!"});
@@ -87,13 +83,10 @@ app.post('/sign_up', async function(req,res){
 });
 
 app.post('/login', async function(req,res){
-    var name = req.body.name;
-    var pass = req.body.password;
-    var data = {
-        "name": name,
-        "password":pass,
-    }
-    const result = await verifyUser(data.name, data.password);
+    let name = req.body.name;
+    let pass = req.body.password;
+
+    const result = await verifyUser(name, pass);
         if(result)
         {
             res.send({"success": "User verified!"});

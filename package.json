@@ -1,0 +1,27 @@
+{
+  "name": "nodeserver",
+  "version": "1.0.0",
+  "description": "Basic Node webserver with login and signup functionality.",
+  "main": "app.js",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "express": "^4.17.1",
+    "mocha": "^9.0.2",
+    "mongodb": "^3.6.10",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nihalb123/NodeServer.git"
+  },
+  "author": "Nihal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nihalb123/NodeServer/issues"
+  },
+  "homepage": "https://github.com/nihalb123/NodeServer#readme"
+}
