@@ -22,9 +22,8 @@
         const signUpBtn = document.getElementById("sign_up"); 
 
         loginBtn.addEventListener("click", async ()=>{
-            const result = await fetch("/login", {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: name.value, password: password.value})});
-            const j = await result.json();
-            alert(JSON.stringify(j));
+            let result = await fetch("/login", {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: name.value, password: password.value})});
+            window.location.replace("http://localhost:3000/");
         });
 
         signUpBtn.addEventListener("click", async ()=>{

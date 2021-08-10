@@ -1,9 +1,11 @@
-
 const express = require("express");
-var bodyParser=require("body-parser");
 const app = express();
+const cookieParser = require("cookie-parser")
+const bodyParser=require("body-parser");
 app.use(bodyParser.json());
-app.use(express.static('public'));
+app.use(express.static(`${__dirname}`));
+app.use(cookieParser());
+
 const mongoUri = "Replace with mongo uri";
 
 // app.use(bodyParser.urlencoded({
@@ -63,9 +65,75 @@ async function verifyUser(name,password)
     }   
 }
 
-app.get("/", (req, res) => {
-    res.sendFile(`${__dirname}/login.html`);
-});
+async function addSession(name, sessionId)
+{
+    const client = new MongoClient(mongoUri, {useNewUrlParser: true, useUnifiedTopology:true});
+    try 
+    {
+        await client.connect();
+        
+
+        let session = {"name":name, "sessionId":sessionId};
+        const res = await client.db("TestDb").collection("SessionInfo").insertOne(session);
+        if(res!==null)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    } 
+    catch (error) 
+    {
+        console.error(error);
+    }
+    finally {
+        await client.close();
+    }   
+}
+
+async function verifySessionId(sessionId)
+{
+    const client = new MongoClient(mongoUri, {useNewUrlParser: true, useUnifiedTopology:true});
+    try 
+    {
+        await client.connect();
+        
+        let session = {"sessionId":sessionId};
+        const res = await client.db("TestDb").collection("SessionInfo").findOne(session);
+        return res;
+    } 
+    catch (error) 
+    {
+        console.error(error);
+    }
+    finally {
+        await client.close();
+    }   
+}
+
+// app.get("/", async function(req, res) {
+//     let sessionId = req.cookies.SessionId;
+//     if(sessionId)
+//     {
+//         const result = await verifySessionId(sessionId);
+//         if(result!==null)
+//         {
+
+//             res.send(`Hi, ${result.name} you are already logged in!`)
+//         }
+//         else
+//         {
+//             res.sendFile(`${__dirname}/login.html`);
+//         }
+//     }
+//     else
+//     {
+//         res.sendFile(`${__dirname}/login.html`);
+//     }
+    
+// });
 
 app.post('/sign_up', async function(req,res){
     let name = req.body.name;
@@ -89,7 +157,17 @@ app.post('/login', async function(req,res){
     const result = await verifyUser(name, pass);
         if(result)
         {
-            res.send({"success": "User verified!"});
+            let sessionId = generateRandomNumber(name);
+            const sessionRes = await addSession(name, sessionId);
+            if(sessionRes)
+            {
+                res.setHeader("set-cookie",[`SessionId = ${sessionId}`])
+                res.send({"success": "User added!"});
+            }
+            else
+            {
+                res.send({"success": "User added!"});
+            }
         }
         else
         {
@@ -99,3 +177,7 @@ app.post('/login', async function(req,res){
   
 app.listen(3000,()=> {console.log("Listening on 3000");});
 
+function generateRandomNumber(name)
+{
+    return name+"12345";
+}
